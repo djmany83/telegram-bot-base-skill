@@ -18,11 +18,24 @@ deployment.
 ## Default Stack
 
 - **Runtime**: Node.js `>=22.0.0` (CommonJS)
-- **Bot framework**: `telegraf` v4
+- **Bot framework**: `telegraf` v4 (Long Polling by default; optional Express webhook mode for production HTTPS)
 - **Database (default)**: MySQL via `mysql2/promise` (connection pool, `utf8mb4`, optional TLS)
 - **Database (lightweight option)**: SQLite (`better-sqlite3`) exposing the same `run`/`get`/`all` interface when the user explicitly requests a local/lightweight bot without MySQL
 - **Config**: `dotenv` + `.env.example`
 - **Deployment**: Non-root `Dockerfile` (`node:22-slim`) + `docker-compose.yml`
+
+## Reference Map
+
+Load only the references needed for the user's request:
+
+| Topic | Reference File |
+|-------|----------------|
+| MySQL pool & SQLite layer | [references/database.md](./references/database.md) |
+| Multi-admin auth, user/group tracking, admin panel | [references/admin-and-tracking.md](./references/admin-and-tracking.md) |
+| Security checklist, Docker, `.env.example`, `bot.js` | [references/security-and-deploy.md](./references/security-and-deploy.md) |
+| Production webhooks (Express + `secret_token` + `/health`) | [references/webhooks.md](./references/webhooks.md) |
+| `escapeHtml`, `sendMessageSafe`, media, BotFather, rate limits | [references/messaging-and-api.md](./references/messaging-and-api.md) |
+| Group moderation, channels, forum topics, inline, Stars, Mini Apps | [references/groups-and-advanced.md](./references/groups-and-advanced.md) |
 
 ## Project Layout
 
@@ -38,7 +51,8 @@ deployment.
 │   └── hears.js                # Reply keyboard button handlers (bot-specific)
 ├── utils/
 │   ├── auth.js                 # Multi-admin ADMIN_ID validation (private chat only)
-│   └── keyboard.js             # Main, Admin, and Cancel reply keyboards
+│   ├── keyboard.js             # Main, Admin, and Cancel reply keyboards
+│   └── telegram.js             # escapeHtml, delay, sendMessageSafe (429 retry / 403 handling)
 ├── .env.example                # Documented env vars (never commit .env)
 ├── .gitignore                  # Ignores .env, node_modules, local DB files
 ├── .dockerignore               # Excludes .env, .git, .agents, local DBs
@@ -88,7 +102,7 @@ Read [references/admin-and-tracking.md](./references/admin-and-tracking.md) and 
   - `registerAdminMenu(bot, USER_COMMANDS_MENU)` calling `setMyCommands` scoped per admin `chat_id` so normal users never see admin commands.
 
 ### 5. Wire `bot.js` Entry Point
-Use the entry point template in [references/security-and-deploy.md](./references/security-and-deploy.md) to:
+Use the entry point template in [references/security-and-deploy.md](./references/security-and-deploy.md) (and [references/webhooks.md](./references/webhooks.md) if webhook mode is requested) to:
 - Load `dotenv` first and fail fast (`process.exit(1)`) if `TOKEN_BOT` is missing/empty.
 - Register global error handler `bot.catch((err, ctx) => ...)` logging concise errors without crashing the process.
 - Register middlewares and handlers in order:
@@ -97,10 +111,15 @@ Use the entry point template in [references/security-and-deploy.md](./references
   3. `setupCommands(bot)`
   4. `setupAdminCommands(bot)`
   5. `setupHears(bot)` (or other domain handlers)
-- Startup sequence (`start()`): `initDatabase()` -> domain init -> `setMyCommands(USER_COMMANDS_MENU)` -> `registerAdminMenu(...)` -> `bot.launch()`.
-- Graceful shutdown on `SIGINT` and `SIGTERM`: `bot.stop(signal)` -> `await closeDatabase()` -> `process.exit(0)`.
+- Startup sequence (`start()`): `initDatabase()` -> domain init -> `setMyCommands(USER_COMMANDS_MENU)` -> `registerAdminMenu(...)` -> `bot.launch()` (or `startWebhookServer(...)` when `WEBHOOK_URL` is set).
+- Graceful shutdown on `SIGINT` and `SIGTERM`: stop Telegraf / close HTTP server -> `await closeDatabase()` -> `process.exit(0)`.
 
-### 6. Apply Security Hardening & Docker Setup
+### 6. Add Messaging, Webhooks, or Advanced Capabilities (As Needed)
+- For HTML formatting, safe delivery with `429` retries, media uploads, or BotFather setup, read [references/messaging-and-api.md](./references/messaging-and-api.md).
+- For production HTTPS webhooks (`express`, `X-Telegram-Bot-Api-Secret-Token` with `timingSafeEqual`, `/health`), read [references/webhooks.md](./references/webhooks.md).
+- For group moderation, channels, forum topics, inline mode, Telegram Stars payments, Mini Apps, or multi-step wizards, read [references/groups-and-advanced.md](./references/groups-and-advanced.md).
+
+### 7. Apply Security Hardening & Docker Setup
 Read [references/security-and-deploy.md](./references/security-and-deploy.md) and apply all security controls plus `Dockerfile`, `.dockerignore`, and `docker-compose.yml`.
 
 ## Validation Checklist

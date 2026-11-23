@@ -30,6 +30,13 @@ Al activar esta skill, el agente sigue una guía estandarizada que cubre:
     - `/status` (`🩺 Estado`) — Latencia en vivo de la BD (`SELECT 1`), memoria RSS, uptime y versión de Node.
     - `/db` (`💾 Respaldo BD`) — Exportación completa de tablas en JSON fechada enviada como documento.
     - `/msg <texto>` (`📢 Difundir`) — Difusión controlada a chats activos con retardo de `50ms`, manejo de `429 Too Many Requests` (`retry_after`) y baja automática ante errores permanentes (`403`, bloqueado, expulsado, desactivado).
+- **Mensajería segura y API de Telegraf (`utils/telegram.js`)**:
+  - `escapeHtml()` para formato HTML seguro y `sendMessageSafe()` con reintento automático ante `429 Too Many Requests` (`retry_after`) y manejo limpio de `403`.
+  - Patrones listos en Node.js/Telegraf para multimedia, encuestas, teclados inline, edición/copia de mensajes, límites de tasa y códigos de error.
+- **Modo Webhook para producción (opcional)**:
+  - Soporte dual Polling / Webhook con **Express**, validación en tiempo constante (`crypto.timingSafeEqual`) del header `X-Telegram-Bot-Api-Secret-Token`, endpoint `/health`, túneles locales (`ngrok`/`localtunnel`) y guía para Vercel/PaaS.
+- **Grupos, canales y funciones avanzadas (Node.js + Telegraf)**:
+  - Moderación, middleware anti-flood, enlaces de invitación con aprobación, canales, Forum Topics, Inline Mode, pagos con **Telegram Stars (`XTR`)**, **Mini Apps (WebApps)** y flujos conversacionales multi-paso.
 - **Hardening de seguridad y despliegue**:
   - Consultas parametrizadas (`?`), fail-fast si falta `TOKEN_BOT`, manejador global `bot.catch` y apagado limpio en `SIGINT`/`SIGTERM`.
   - Plantillas de `Dockerfile` (usuario no-root `node:22-slim`), `.dockerignore`, `docker-compose.yml` (con `--dns-result-order=ipv4first` para evitar timeouts IPv6 en Docker) y `.env.example`.
@@ -40,12 +47,15 @@ Al activar esta skill, el agente sigue una guía estandarizada que cubre:
 
 ```text
 telegram-bot-base-skill/
-├── SKILL.md                             # Instrucciones principales, flujo de trabajo y checklist de validación
+├── SKILL.md                             # Instrucciones principales, mapa de referencias y checklist
 ├── README.md                            # Documentación de la skill
 └── references/
     ├── database.md                      # Implementación de referencia para MySQL y SQLite
     ├── admin-and-tracking.md            # Auth multi-admin, middleware de tracking y panel admin
-    └── security-and-deploy.md           # Checklist de seguridad, Docker, .env.example y plantilla bot.js
+    ├── security-and-deploy.md           # Checklist de seguridad, Docker, .env.example y plantilla bot.js
+    ├── webhooks.md                      # Webhooks con Express, secret_token, /health y troubleshooting
+    ├── messaging-and-api.md             # escapeHtml, sendMessageSafe, multimedia, BotFather y rate limits
+    └── groups-and-advanced.md           # Moderación, canales, topics, inline, Stars, Mini Apps y FSM
 ```
 
 ---
@@ -64,7 +74,8 @@ telegram-bot-base-skill/
 │   └── hears.js                # Handlers de botones de teclado de respuesta
 ├── utils/
 │   ├── auth.js                 # Validación multi-admin solo en chat privado
-│   └── keyboard.js             # Teclados principal, admin y cancelar
+│   ├── keyboard.js             # Teclados principal, admin y cancelar
+│   └── telegram.js             # escapeHtml, delay y sendMessageSafe (429 retry / 403)
 ├── .env.example                # Variables de entorno documentadas
 ├── .gitignore
 ├── .dockerignore

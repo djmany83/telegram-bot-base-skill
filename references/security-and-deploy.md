@@ -113,6 +113,11 @@ DB_NAME=bot_db
 
 # Enable TLS for MySQL if required (true | false)
 DB_SSL=false
+
+# Optional: Webhook mode (leave empty to use Long Polling)
+WEBHOOK_URL=
+WEBHOOK_SECRET=
+PORT=3000
 ```
 
 ---
