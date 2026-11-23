@@ -4,6 +4,7 @@
 [![Telegraf](https://img.shields.io/badge/Telegraf-v4-26A5E4?logo=telegram&logoColor=white)](https://telegraf.js.org/)
 [![MySQL](https://img.shields.io/badge/MySQL-8%2B%20%7C%20SQLite-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![Docker](https://img.shields.io/badge/Docker-Non--Root%20Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 Skill reutilizable para agentes de IA que proporciona una arquitectura modular y lista para producción para crear o mejorar **bots de Telegram** con **Node.js**, **Telegraf v4**, **MySQL** (o **SQLite** opcional) y **Docker**.
 
@@ -49,6 +50,7 @@ Al activar esta skill, el agente sigue una guía estandarizada que cubre:
 telegram-bot-base-skill/
 ├── SKILL.md                             # Instrucciones principales, mapa de referencias y checklist
 ├── README.md                            # Documentación de la skill
+├── LICENSE                              # Licencia MIT
 └── references/
     ├── database.md                      # Implementación de referencia para MySQL y SQLite
     ├── admin-and-tracking.md            # Auth multi-admin, middleware de tracking y panel admin
@@ -139,3 +141,9 @@ Una vez instalada, el agente cargará la skill automáticamente cuando le pidas 
 - **MySQL 8+** (o **SQLite** si se solicita la variante ligera)
 - Token de bot obtenido en [@BotFather](https://t.me/BotFather)
 - **Docker** y **Docker Compose** (opcional, para despliegue en contenedor)
+
+---
+
+## Licencia
+
+Distribuido bajo la licencia **MIT**. Consulta el archivo [LICENSE](./LICENSE) para más información.
